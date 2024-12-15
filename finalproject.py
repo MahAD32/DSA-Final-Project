@@ -29,7 +29,6 @@ def solve_button_click(board, grid_entries, game_over_callback):
         update_gui(board, grid_entries)
     else:
         print("No solution exists!")
-    # Trigger game over after solving the puzzle
     game_over_callback()
 
 
@@ -45,23 +44,21 @@ def hint_button_click(board, grid_entries, hint_count):
     if hint_count["used"] >= hint_count["max"]:
         return
 
-    # Find all empty cells (cells with 0) that have not been filled by the user
     empty_cells = [(row, col) for row in range(9) for col in range(9) if board[row][col] == 0 and grid_entries[row][col].get() == ""]
 
     if not empty_cells:
-        return  # No empty cells left to hint
+        return
 
-    # Iterate over empty cells and provide a hint for the first valid one
     for row, col in empty_cells:
         for num in range(1, 10):
-            if is_valid(board, row, col, num):  # Check if the number is valid
-                board[row][col] = num  # Fill the hint in the board
-                grid_entries[row][col].delete(0, tk.END)  # Clear any existing value
-                grid_entries[row][col].insert(0, str(num))  # Show the hint in the GUI
+            if is_valid(board, row, col, num):
+                board[row][col] = num
+                grid_entries[row][col].delete(0, tk.END)
+                grid_entries[row][col].insert(0, str(num))
                 grid_entries[row][col].config(bg="lightblue", font=("Arial", 18, "bold"))
-                grid_entries[row][col].after(300, lambda: grid_entries[row][col].config(bg="white"))  # Reset color
-                hint_count["used"] += 1  # Increase the used hint count
-                return  # Exit after giving one hint
+                grid_entries[row][col].after(300, lambda: grid_entries[row][col].config(bg="white"))
+                hint_count["used"] += 1
+                return
 
 
 def start_timer(timer_label):
@@ -90,17 +87,15 @@ def validate_input(board, grid_entries, row, col, event):
         else:
             event.widget.config(bg="red")
 
+
 def game_over_callback(root, start_screen_bg, start_time):
-    # Calculate elapsed time
     elapsed_time = int(time.time() - start_time)
     minutes = elapsed_time // 60
     seconds = elapsed_time % 60
     time_str = f"{minutes:02}:{seconds:02}"
 
-    # Hide the main window after 5 seconds
-    root.after(5000, root.withdraw)  # Corrected this line by passing the function without parentheses
+    root.after(5000, root.withdraw)
     
-    # Show the Game Over screen immediately after hiding the main window
     root.after(5000, lambda: create_game_over_screen(root, start_screen_bg, time_str))
 
 
@@ -108,19 +103,14 @@ def create_game_over_screen(root, background_image, time_str):
     game_over_window = tk.Toplevel(root)
     game_over_window.geometry("800x700")
     game_over_window.config(bg="#f3f3f3")
-
-    # Set the background image
     bg_label = tk.Label(game_over_window, image=background_image)
     bg_label.place(relwidth=1, relheight=1)
-
-    # Display the "Game Over" message and time
     game_over_label = tk.Label(game_over_window, text="GAME OVER", font=("Arial", 48, "bold"), bg="#FFDAC0", fg="red")
     game_over_label.place(relx=0.5, rely=0.4, anchor="center")
 
     time_label = tk.Label(game_over_window, text=f"Time: {time_str}", font=("Arial", 24), bg="#FFDAC0")
     time_label.place(relx=0.5, rely=0.5, anchor="center")
 
-    # Add buttons to restart or exit
     restart_button = tk.Button(game_over_window, text="Restart", font=("Arial", 16), command=lambda: restart_game(root, background_image), relief="raised", bg="#FFDAC0", fg="white")
     restart_button.place(relx=0.5, rely=0.6, anchor="center")
 
@@ -129,25 +119,17 @@ def create_game_over_screen(root, background_image, time_str):
 
 
 def restart_game(root, background_image):
-    # Destroy all Toplevel windows (game over window, etc.)
-    for window in root.winfo_children():
-        if isinstance(window, tk.Toplevel):
-            window.destroy()
-
-    # Make the root window visible again
-    root.deiconify()
-
-    # Restart the game with the initial settings
+    root.withdraw()
     start_game(root, "medium", background_image)
-
+    root.deiconify()
 
 
 def check_game_completion(board):
     for row in range(9):
         for col in range(9):
             if board[row][col] == 0:
-                return False  # There are still empty cells
-    return True  # The board is complete
+                return False
+    return True
 
 
 def create_sudoku_gui(root, difficulty, background_image):
@@ -190,12 +172,10 @@ def create_sudoku_gui(root, difficulty, background_image):
     difficulty_button = tk.Button(root, text="Restart", command=lambda: update_gui(generate_sudoku(difficulty), grid_entries), font=("Arial", 16), relief="raised", bg="#FFDAC0", fg="white")
     difficulty_button.place(x=200, y=600)
 
-    # Check if game is completed
     def on_click(event):
         if check_game_completion(board):
             game_over_callback(root, start_screen_bg, start_time)
 
-    # Bind click event to check completion after solving
     root.bind("<Button-1>", on_click)
 
 
@@ -225,6 +205,7 @@ def create_start_screen(root, background_image):
     start_button.pack(pady=20, anchor="center")
     start_button.bind("<Enter>", lambda e: style.configure("TButton", background="#45a049"))
     start_button.bind("<Leave>", lambda e: style.configure("TButton", background="#4CAF50"))
+
 
 
 def start_game(root, difficulty, background_image):
