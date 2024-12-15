@@ -5,12 +5,10 @@ import time
 import random
 from sudoku_algorithms import generate_sudoku, solve_sudoku_with_dfs, is_valid
 
-
 def apply_blur(image_path):
     image = Image.open(image_path)
     blurred_image = image.filter(ImageFilter.GaussianBlur(radius=8))
     return ImageTk.PhotoImage(blurred_image)
-
 
 def update_gui(board, grid_entries):
     for row in range(9):
@@ -23,7 +21,6 @@ def update_gui(board, grid_entries):
             else:
                 grid_entries[row][col].config(state="normal", bg="white", highlightbackground="black")
 
-
 def solve_button_click(board, grid_entries, game_over_callback):
     if solve_sudoku_with_dfs(board):
         update_gui(board, grid_entries)
@@ -31,14 +28,12 @@ def solve_button_click(board, grid_entries, game_over_callback):
         print("No solution exists!")
     game_over_callback()
 
-
 def find_empty_cell(board):
     for i in range(9):
         for j in range(9):
             if board[i][j] == 0:
                 return i, j
     return None, None
-
 
 def hint_button_click(board, grid_entries, hint_count):
     if hint_count["used"] >= hint_count["max"]:
@@ -60,7 +55,6 @@ def hint_button_click(board, grid_entries, hint_count):
                 hint_count["used"] += 1
                 return
 
-
 def start_timer(timer_label):
     start_time = time.time()
 
@@ -72,23 +66,23 @@ def start_timer(timer_label):
         timer_label.after(1000, update_time)
 
     update_time()
+
 def validate_input(board, grid_entries, row, col, event):
-    initial_value = board[row][col]
-    
-    if initial_value != 0:  
+    value = event.widget.get().strip() 
+    if value == "":
+        event.widget.config(bg="white")
+        board[row][col] = 0 
         return
-    
     try:
-        value = int(event.widget.get())
-        if value < 1 or value > 9 or not is_valid(board, row, col, value):
-            event.widget.config(bg="red") 
-        else:
+        num_value = int(value)
+        if 1 <= num_value <= 9 and is_valid(board, row, col, num_value):
             event.widget.config(bg="white")  
-    except ValueError:
-        if event.widget.get() == "":
-            event.widget.config(bg="white") 
+            board[row][col] = num_value 
         else:
-            event.widget.config(bg="red") 
+            event.widget.config(bg="red")  
+    except ValueError:
+        event.widget.config(bg="red")
+
 
 def game_over_callback(root, start_screen_bg, start_time):
     elapsed_time = int(time.time() - start_time)
@@ -99,7 +93,6 @@ def game_over_callback(root, start_screen_bg, start_time):
     root.after(5000, root.withdraw)
     
     root.after(5000, lambda: create_game_over_screen(root, start_screen_bg, time_str))
-
 
 def create_game_over_screen(root, background_image, time_str):
     game_over_window = tk.Toplevel(root)
@@ -119,12 +112,10 @@ def create_game_over_screen(root, background_image, time_str):
     close_button = tk.Button(game_over_window, text="Exit", font=("Arial", 16), command=root.quit, relief="raised", bg="#FFDAC0", fg="white")
     close_button.place(relx=0.5, rely=0.7, anchor="center")
 
-
 def restart_game(root, background_image):
     root.withdraw()
     start_game(root, "medium", background_image)
     root.deiconify()
-
 
 def check_game_completion(board):
     for row in range(9):
@@ -151,6 +142,7 @@ def create_sudoku_gui(root, difficulty, background_image):
             entry = tk.Entry(frame, width=5, font=("Arial", 18), justify="center", bd=3, relief="solid", highlightbackground="gray")
             entry.grid(row=i, column=j, padx=5, pady=5)
 
+            # Bind to KeyRelease to validate input as soon as the user types
             entry.bind("<KeyRelease>", lambda event, row=i, col=j: validate_input(board, grid_entries, row, col, event))
 
             row_entries.append(entry)
@@ -181,7 +173,6 @@ def create_sudoku_gui(root, difficulty, background_image):
 
     root.bind("<Button-1>", on_click)
 
-
 def create_start_screen(root, background_image):
     root.title("Sudoku Game Start Screen")
     root.geometry("800x600")
@@ -209,13 +200,10 @@ def create_start_screen(root, background_image):
     start_button.bind("<Enter>", lambda e: style.configure("TButton", background="#45a049"))
     start_button.bind("<Leave>", lambda e: style.configure("TButton", background="#4CAF50"))
 
-
-
 def start_game(root, difficulty, background_image):
     for widget in root.winfo_children():
         widget.destroy()
     create_sudoku_gui(root, difficulty, background_image)
-
 
 if __name__ == "__main__":
     root = tk.Tk()
