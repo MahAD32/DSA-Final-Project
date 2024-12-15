@@ -72,21 +72,23 @@ def start_timer(timer_label):
         timer_label.after(1000, update_time)
 
     update_time()
-
-
 def validate_input(board, grid_entries, row, col, event):
+    initial_value = board[row][col]
+    
+    if initial_value != 0:  
+        return
+    
     try:
         value = int(event.widget.get())
         if value < 1 or value > 9 or not is_valid(board, row, col, value):
-            event.widget.config(bg="red")
+            event.widget.config(bg="red") 
         else:
-            event.widget.config(bg="white")
+            event.widget.config(bg="white")  
     except ValueError:
         if event.widget.get() == "":
-            event.widget.config(bg="white")
+            event.widget.config(bg="white") 
         else:
-            event.widget.config(bg="red")
-
+            event.widget.config(bg="red") 
 
 def game_over_callback(root, start_screen_bg, start_time):
     elapsed_time = int(time.time() - start_time)
@@ -131,7 +133,6 @@ def check_game_completion(board):
                 return False
     return True
 
-
 def create_sudoku_gui(root, difficulty, background_image):
     root.title("Sudoku Game")
     root.geometry("800x700")
@@ -149,7 +150,9 @@ def create_sudoku_gui(root, difficulty, background_image):
         for j in range(9):
             entry = tk.Entry(frame, width=5, font=("Arial", 18), justify="center", bd=3, relief="solid", highlightbackground="gray")
             entry.grid(row=i, column=j, padx=5, pady=5)
-            entry.bind("<FocusOut>", lambda event, row=i, col=j: validate_input(board, grid_entries, row, col, event))
+
+            entry.bind("<KeyRelease>", lambda event, row=i, col=j: validate_input(board, grid_entries, row, col, event))
+
             row_entries.append(entry)
         grid_entries.append(row_entries)
 
